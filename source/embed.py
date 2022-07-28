@@ -27,7 +27,7 @@ import logging
 from collections import namedtuple
 from subprocess import run
 from pathlib import Path
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 import torch
 import torch.nn as nn

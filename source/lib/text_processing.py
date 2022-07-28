@@ -48,33 +48,19 @@ def SPMApply(inp_fname, out_fname, spm_model, lang='en',
              verbose=False, over_write=False, gzip=False):
     assert lower_case, 'lower case is needed by all the models'
     if not os.path.isfile(out_fname):
-        cat = 'zcat ' if gzip else 'cat '
         if verbose:
             logger.info('SPM processing {}'
                   .format(os.path.basename(inp_fname)))
 
-        mt = MosesTokenizer(lang='en')
         with open(inp_fname, 'r') as f:
             tekst = f.read()
-            print(tekst)
-
             sp = spm.SentencePieceProcessor(model_file=spm_model)
             transformed = sp.EncodeAsPieces(tekst)
-            print(transformed)
+            with open(out_fname, 'w') as f:
+                f.write(" ".join(transformed))
 
 
-        assert os.path.isfile(spm_model), f'SPM model {spm_model} not found'
-        command = (cat + inp_fname
-            + '|' + SPM + " --model=" + spm_model
-            + ' > ' + out_fname)
-
-        try:
-            run(["/bin/bash", "-o", "pipefail", "-c", command], check=True, capture_output=True)
-            with open(out_fname, 'r') as f:
-                print(f.read())
-        except CalledProcessError as e:
-            logger.error(e.stderr.decode().strip())
-            sys.exit(1)
+        # todo: multiple sentences
 
     elif not over_write and verbose:
         logger.info('SPM encoded file {} exists already'
