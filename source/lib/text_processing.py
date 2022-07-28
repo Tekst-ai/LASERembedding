@@ -43,26 +43,19 @@ SPM = 'LD_LIBRARY_PATH=' + SPM_DIR + ' ' + SPM_DIR + 'spm_encode --output_format
 ###############################################################################
 # todo: romanize
 
-def SPMApply(inp_fname, out_fname, spm_model, lang='en',
+def SPMApply(input_text, spm_model, lang='en',
              lower_case=True, descape=False,
              verbose=False, over_write=False, gzip=False):
     assert lower_case, 'lower case is needed by all the models'
-    if not os.path.isfile(out_fname):
-        if verbose:
-            logger.info('SPM processing {}'
-                  .format(os.path.basename(inp_fname)))
 
-        with open(inp_fname, 'r') as f:
-            tekst = f.read()
-            sp = spm.SentencePieceProcessor(model_file=spm_model)
-            transformed = sp.EncodeAsPieces(tekst)
-            with open(out_fname, 'w') as f:
-                f.write(" ".join(transformed))
+    if verbose:
+        logger.info('SPM processing')
 
+    sp = spm.SentencePieceProcessor(model_file=spm_model)
+    transformed = sp.EncodeAsPieces(input_text)
+    print(transformed)
+    return " ".join(transformed)
 
-        # todo: multiple sentences
+    # todo: multiple sentences etc
 
-    elif not over_write and verbose:
-        logger.info('SPM encoded file {} exists already'
-              .format(os.path.basename(out_fname)))
 

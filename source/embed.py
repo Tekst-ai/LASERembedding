@@ -403,6 +403,7 @@ def EncodeFilep(
         encoded = encoder.encode_sentences(sentences)
         if fp16:
             encoded = encoded.astype(np.float16)
+        print(encoded)
         encoded.tofile(out_file)
         n += len(sentences)
         if verbose and n % 10000 == 0:
@@ -410,6 +411,21 @@ def EncodeFilep(
     if verbose:
         logger.info(f"encoded {n} sentences in {EncodeTime(t)}")
 
+# Encode sentences (existing file pointers)
+def EncodeTexts(
+    encoder, text, buffer_size=10000, fp16=False, verbose=False
+):
+    t = time.time()
+    results = []
+    for sentences in text:
+        encoded = encoder.encode_sentences([sentences])
+        if fp16:
+            encoded = encoded.astype(np.float16)
+        results.append(encoded)
+
+    if verbose:
+        logger.info(f"encoded {len(text)} sentences in {EncodeTime(t)}")
+    return results
 
 
 # Encode sentences (file names)
@@ -420,30 +436,20 @@ def EncodeFile(
     buffer_size=10000,
     fp16=False,
     verbose=False,
-    over_write=False,
-    inp_encoding="utf-8",
 ):
     # TODO :handle over write
-    if not os.path.isfile(out_fname):
-        if verbose:
-            logger.info(
-                "encoding {} to {}".format(
-                    inp_fname if len(inp_fname) > 0 else "stdin", out_fname,
-                )
+
+    if verbose:
+        logger.info(
+            "encoding {} to {}".format(
+                inp_fname if len(inp_fname) > 0 else "stdin", out_fname,
             )
-        fin = (
-            open(inp_fname, "r", encoding=inp_encoding, errors="surrogateescape")
-            if len(inp_fname) > 0
-            else sys.stdin
         )
-        fout = open(out_fname, mode="wb")
-        EncodeFilep(
-            encoder, fin, fout, buffer_size=buffer_size, fp16=fp16, verbose=verbose
-        )
-        fin.close()
-        fout.close()
-    elif not over_write and verbose:
-        logger.info("encoder: {} exists already".format(os.path.basename(out_fname)))
+
+    result = EncodeTexts(
+        encoder, [inp_fname], buffer_size=buffer_size, fp16=fp16, verbose=verbose
+    )
+    return result[0]
 
 
 # Load existing embeddings
@@ -502,116 +508,24 @@ def embed_sentences(
             sort_kind=sort_kind,
             cpu=cpu,
         )
-    if not ifname:
-        ifname = ""  # default to stdin
-    with tempfile.TemporaryDirectory() as tmpdir:
-        if bpe_codes:
-            if ifname == "":  # stdin
-                ifname = os.path.join(tmpdir, "no_tok")
-                run(f'cat > {ifname}', shell=True)
-            bpe_fname = os.path.join(tmpdir, "bpe")
-            print("hey")
-            exit(522)
+    # todo: add bpe part
 
-            ifname = bpe_fname
-
-        if spm_model:
-            spm_fname = os.path.join(tmpdir, "spm")
-            SPMApply(
-                ifname,
-                spm_fname,
-                spm_model,
-                lang=spm_lang,
-                lower_case=True,
-                verbose=verbose,
-                over_write=False,
-            )
-            ifname = spm_fname
-
-        EncodeFile(
-            encoder,
+    if spm_model:
+        transformed_text = SPMApply(
             ifname,
-            output,
+            spm_model,
+            lang=spm_lang,
+            lower_case=True,
             verbose=verbose,
             over_write=False,
-            buffer_size=buffer_size,
-            fp16=fp16,
         )
 
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="LASER: Embed sentences")
-    parser.add_argument(
-        "-i", "--input", type=str, default=None, help="Input text file",
+    embedding = EncodeFile(
+        encoder,
+        transformed_text,
+        output,
+        verbose=verbose,
+        buffer_size=buffer_size,
+        fp16=fp16,
     )
-    parser.add_argument("--encoder", type=str, required=True, help="encoder to be used")
-    parser.add_argument(
-        "--token-lang",
-        type=str,
-        default="--",
-        help="Perform tokenization with given language ('--' for no tokenization)",
-    )
-    parser.add_argument(
-        "--bpe-codes", type=str, default=None, help="Apply BPE using specified codes"
-    )
-    parser.add_argument(
-        "--spm-lang", type=str, default="en", help="Apply SPM using specified language"
-    )
-    parser.add_argument(
-        "--spm-model", type=str, default=None, help="Apply SPM using specified model"
-    )
-    parser.add_argument("-v", "--verbose", action="store_true", help="Detailed output")
-
-    parser.add_argument(
-        "-o", "--output", required=True, help="Output sentence embeddings"
-    )
-    parser.add_argument(
-        "--buffer-size", type=int, default=10000, help="Buffer size (sentences)"
-    )
-    parser.add_argument(
-        "--max-tokens",
-        type=int,
-        default=12000,
-        help="Maximum number of tokens to process in a batch",
-    )
-    parser.add_argument(
-        "--max-sentences",
-        type=int,
-        default=None,
-        help="Maximum number of sentences to process in a batch",
-    )
-    parser.add_argument(
-        "--fp16",
-        action="store_true",
-        help="Store embedding matrices in fp16 instead of fp32",
-    )
-    parser.add_argument("--cpu", action="store_true", help="Use CPU instead of GPU")
-    parser.add_argument(
-        "--sort-kind",
-        type=str,
-        default="quicksort",
-        choices=["quicksort", "mergesort"],
-        help="Algorithm used to sort batch by length",
-    )
-    parser.add_argument(
-        "--use-hugging-face", action="store_true", help="Use a HuggingFace sentence transformer"
-    )
-
-    args = parser.parse_args()
-    embed_sentences(
-        ifname=args.input,
-        encoder_path=args.encoder,
-        token_lang=args.token_lang,
-        bpe_codes=args.bpe_codes,
-        spm_lang=args.spm_lang,
-        hugging_face=args.use_hugging_face,
-        spm_model=args.spm_model,
-        verbose=args.verbose,
-        output=args.output,
-        buffer_size=args.buffer_size,
-        max_tokens=args.max_tokens,
-        max_sentences=args.max_sentences,
-        cpu=args.cpu,
-        fp16=args.fp16,
-        sort_kind=args.sort_kind,
-    )
+    return embedding
