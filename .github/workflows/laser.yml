@@ -23,5 +23,4 @@ jobs:
           pip install -r dev_requirements.txt
       - name: Lint
         run: |
-          cd analytics
           make lint
