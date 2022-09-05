@@ -18,9 +18,8 @@ jobs:
           python-version: '3.9'
           cache: 'pip'
           cache-dependency-path: 'requirements.txt'
-      - name: Install analytics
+      - name: Install laser
         run: |
-          cd analytics
           pip install -r requirements.txt
           pip install -r dev_requirements.txt
       - name: Lint
