@@ -20,7 +20,6 @@ jobs:
           cache-dependency-path: 'requirements.txt'
       - name: Install laser
         run: |
-          pip install -r requirements.txt
           pip install -r dev_requirements.txt
       - name: Lint
         run: |
