@@ -1,5 +1,6 @@
-import numpy as np
 import sys
+
+import numpy as np
 
 dim = 1024
 X = np.fromfile(sys.argv[1], dtype=np.float32, count=-1)

@@ -14,32 +14,46 @@
 #
 # Romanize and lower case text
 
-import os
-import sys
 import argparse
-from transliterate import translit, get_available_language_codes
+import sys
+
+from transliterate import get_available_language_codes, translit
 
 parser = argparse.ArgumentParser(
     formatter_class=argparse.RawDescriptionHelpFormatter,
-    description="Calculate multilingual sentence encodings")
+    description="Calculate multilingual sentence encodings",
+)
 parser.add_argument(
-    '--input', '-i', type=argparse.FileType('r', encoding='UTF-8'),
+    "--input",
+    "-i",
+    type=argparse.FileType("r", encoding="UTF-8"),
     default=sys.stdin,
-    metavar='PATH',
-    help="Input text file (default: standard input).")
+    metavar="PATH",
+    help="Input text file (default: standard input).",
+)
 parser.add_argument(
-    '--output', '-o', type=argparse.FileType('w', encoding='UTF-8'),
+    "--output",
+    "-o",
+    type=argparse.FileType("w", encoding="UTF-8"),
     default=sys.stdout,
-    metavar='PATH',
-    help="Output text file (default: standard output).")
+    metavar="PATH",
+    help="Output text file (default: standard output).",
+)
 parser.add_argument(
-    '--language', '-l', type=str,
-    metavar='STR', default="none",
+    "--language",
+    "-l",
+    type=str,
+    metavar="STR",
+    default="none",
     help="perform transliteration into Roman characters"
-         " from the specified language (default none)")
+    " from the specified language (default none)",
+)
 parser.add_argument(
-    '--preserve-case', '-C', action='store_true',
-    help="Preserve case of input texts (default is all lower case)")
+    "--preserve-case",
+    "-C",
+    action="store_true",
+    help="Preserve case of input texts (default is all lower case)",
+)
 
 args = parser.parse_args()
 

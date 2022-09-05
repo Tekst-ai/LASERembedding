@@ -16,31 +16,22 @@
 # The functions can be also imported into another Python code
 
 
-import re
+import logging
 import os
-import tempfile
+import re
 import sys
 import time
-import argparse
-import numpy as np
-import logging
 from collections import namedtuple
-from subprocess import run
 from pathlib import Path
 from typing import Optional, Union
 
+import numpy as np
 import torch
 import torch.nn as nn
-
-
-from lib.text_processing import SPMApply
-
-from fairseq.models.transformer import (
-    Embedding,
-    TransformerEncoder,
-)
 from fairseq.data.dictionary import Dictionary
+from fairseq.models.transformer import Embedding, TransformerEncoder
 from fairseq.modules import LayerNorm
+from lib.text_processing import SPMApply
 
 SPACE_NORMALIZER = re.compile(r"\s+")
 Batch = namedtuple("Batch", "srcs tokens lengths")
@@ -48,8 +39,10 @@ Batch = namedtuple("Batch", "srcs tokens lengths")
 logging.basicConfig(
     stream=sys.stdout,
     level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s")
-logger = logging.getLogger('embed')
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+)
+logger = logging.getLogger("embed")
+
 
 def buffered_read(fp, buffer_size):
     buffer = []
@@ -183,9 +176,10 @@ class SentenceEncoder:
         return np.vstack(results)[np.argsort(indices, kind=self.sort_kind)]
 
 
-class HuggingFaceEncoder():
+class HuggingFaceEncoder:
     def __init__(self, encoder_name: str, verbose=False):
         from sentence_transformers import SentenceTransformer
+
         encoder = f"sentence-transformers/{encoder_name}"
         if verbose:
             logger.info(f"loading HuggingFace encoder: {encoder}")
@@ -208,7 +202,9 @@ class LaserTransformerEncoder(TransformerEncoder):
         self.pad_idx = self.dictionary.pad_index
         self.bos_idx = self.dictionary.bos_index
         embed_tokens = Embedding(
-            len(self.dictionary), cfg.encoder_embed_dim, self.pad_idx,
+            len(self.dictionary),
+            cfg.encoder_embed_dim,
+            self.pad_idx,
         )
         super().__init__(cfg, self.dictionary, embed_tokens)
         if "decoder.version" in state_dict["model"]:
@@ -353,7 +349,7 @@ def load_model(
     bpe_codes: str,
     hugging_face=False,
     verbose=False,
-    **encoder_kwargs
+    **encoder_kwargs,
 ) -> Union[SentenceEncoder, HuggingFaceEncoder]:
     if hugging_face:
         return HuggingFaceEncoder(encoder, verbose=verbose)
@@ -411,10 +407,9 @@ def EncodeFilep(
     if verbose:
         logger.info(f"encoded {n} sentences in {EncodeTime(t)}")
 
+
 # Encode sentences (existing file pointers)
-def EncodeTexts(
-    encoder, text, buffer_size=10000, fp16=False, verbose=False
-):
+def EncodeTexts(encoder, text, buffer_size=10000, fp16=False, verbose=False):
     t = time.time()
     results = []
     for sentences in text:
@@ -442,7 +437,8 @@ def EncodeFile(
     if verbose:
         logger.info(
             "encoding {} to {}".format(
-                inp_fname if len(inp_fname) > 0 else "stdin", out_fname,
+                inp_fname if len(inp_fname) > 0 else "stdin",
+                out_fname,
             )
         )
 
@@ -475,7 +471,7 @@ def embed_sentences(
     output: Path,
     encoder: Union[SentenceEncoder, HuggingFaceEncoder] = None,
     encoder_path: Path = None,
-    hugging_face = False,
+    hugging_face=False,
     token_lang: Optional[str] = "--",
     bpe_codes: Optional[Path] = None,
     spm_lang: Optional[str] = "en",
