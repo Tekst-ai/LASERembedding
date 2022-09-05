@@ -1,9 +1,18 @@
-# LASER embeddings v2   
+# WIP: pip installable version of LASERv2 and LASERv3
 
-is a python package that makes the new LASER models of [Facebook Research's NNLB](https://github.com/facebookresearch/LASER/tree/main/nllb) (no language left behind) 
-easy installable and ready to use.
+# LASER  Language-Agnostic SEntence Representations
 
-The original version had a lot of extra dependencies and is hard to install.
+LASER is a library to calculate and use multilingual sentence embeddings.
+
+**NEWS**
+* 2022/07/06 Updated LASER models with support for over 200 languages are [**now available**](nllb/README.md)
+* 2022/07/06 Multilingual similarity search (**xsim**) evaluation pipeline [**released**](tasks/xsim/README.md)
+* 2022/05/03 [**Librivox S2S is available**](tasks/librivox-s2s): Speech-to-Speech translations automatically mined in Librivox [9]
+* 2019/11/08 [**CCMatrix is available**](tasks/CCMatrix): Mining billions of high-quality parallel sentences on the WEB [8]
+* 2019/07/31 Gilles Bodard and Jérémy Rapin provided a [**Docker environment**](docker) to use LASER
+* 2019/07/11 [**WikiMatrix is available**](tasks/WikiMatrix): bitext extraction for 1620 language pairs in WikiPedia [7]
+* 2019/03/18 switch to BSD license
+* 2019/02/13 The code to perform bitext mining is [**now available**](tasks/bucc)
 
 **CURRENT VERSION:**
 * We now provide updated LASER models which support over 200 languages. Please see [here](nllb/README.md) for more details including how to download the models and perform inference.
@@ -18,9 +27,26 @@ a language family which is covered by other languages.
 A detailed description of how the multilingual sentence embeddings are trained can
 be found in [10], together with an experimental evaluation.
 
+## Dependencies
+* Python 3.6
+* [PyTorch 1.0](http://pytorch.org/)
+* [NumPy](http://www.numpy.org/), tested with 1.15.4
+* [Cython](https://pypi.org/project/Cython/), needed by Python wrapper of FastBPE, tested with 0.29.6
+* [Faiss](https://github.com/facebookresearch/faiss), for fast similarity search and bitext mining
+* [transliterate 1.10.2](https://pypi.org/project/transliterate) (`pip install transliterate`)
+* [jieba 0.39](https://pypi.org/project/jieba/), Chinese segmenter (`pip install jieba`)
+* [mecab 0.996](https://pypi.org/project/JapaneseTokenizer/), Japanese segmenter
+* tokenization from the Moses encoder (installed automatically)
+* [FastBPE](https://github.com/glample/fastBPE), fast C++ implementation of byte-pair encoding (installed automatically)
+* [Fairseq](https://github.com/pytorch/fairseq), sequence modeling toolkit (`pip install fairseq==0.12.1`)
+* [tabulate](https://pypi.org/project/tabulate), pretty-print tabular data (`pip install tabulate`)
+* [pandas](https://pypi.org/project/pandas), data analysis toolkit (`pip install pandas`)
+* [Sentencepiece](https://github.com/google/sentencepiece), subword tokenization (installed automatically)
+
 ## Installation
-* download encoders from Amazon s3 by e.g. `bash download_models.sh` 
-  * This downloads all the LASER files to /models folder
+* set the environment variable 'LASER' to the root of the installation, e.g.
+  `export LASER="${HOME}/projects/laser"`
+* download encoders from Amazon s3 by e.g. `bash ./nllb/download_models.sh` 
 * download third party software by `bash ./install_external_tools.sh`
 * download the data used in the example tasks (see description for each task)
 

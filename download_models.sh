@@ -15,7 +15,7 @@
 # This bash script installs NLLB LASER2 and LASER3 sentence encoders from Amazon s3
 
 # default to download to current directory
-mdir=$(pwd)
+mdir=$(pwd)/LASERembeddingv2/models
 
 echo "Directory for model download: ${mdir}"
 

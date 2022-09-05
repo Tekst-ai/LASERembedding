@@ -488,6 +488,7 @@ def embed_sentences(
     fp16: bool = False,
     sort_kind: str = "quicksort",
 ):
+
     assert encoder or encoder_path, "Provide initialised encoder or encoder_path"
     buffer_size = max(buffer_size, 1)
     assert (
