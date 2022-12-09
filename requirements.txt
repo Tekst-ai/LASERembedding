@@ -2,7 +2,7 @@ antlr4-python3-runtime==4.8
 bitarray==2.6.0
 bleach==5.0.1
 build==0.8.0
-certifi==2022.6.15
+certifi==2022.12.7
 cffi==1.15.1
 charset-normalizer==2.1.0
 click==8.1.3
