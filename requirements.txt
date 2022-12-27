@@ -44,7 +44,7 @@ sacrebleu==2.2.0
 sacremoses==0.0.53
 SecretStorage==3.3.2
 sentencepiece==0.1.96
-setuptools==62.6.0
+setuptools==65.5.1
 six==1.16.0
 subword-nmt==0.3.8
 tabulate==0.8.10
